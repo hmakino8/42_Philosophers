@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
+/*   Updated: 2022/12/10 20:31:31 by hiroaki          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO
 # define PHILO
 
@@ -8,6 +20,8 @@
 # include <time.h>
 # include <sys/time.h>
 # include "utils.h"
+
+# define ERROR -1
 
 typedef struct s_arg
 {
@@ -26,11 +40,11 @@ typedef	struct s_time
 
 typedef struct s_philo
 {
-	int				idx;
+	int				id;
 	int				cnt_eat;
-	int				time_last_eat;
 	bool			fork_l;
 	bool			fork_r;
+	t_time			time_last_eat;
 	pthread_t		thread;
 	pthread_mutex_t	monitor_eat;
 }	t_philo;

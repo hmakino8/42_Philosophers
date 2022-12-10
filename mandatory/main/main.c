@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 02:09:13 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/10 01:43:04 by hiroaki          ###   ########.fr       */
+/*   Updated: 2022/12/10 20:38:44 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,15 +44,30 @@ void	init_s_arg(t_data *d, t_arg *arg, int argc, char *argv[])
 		philo_exit(d, "Invalid argument.");
 }
 
-void	init_s_time(t_data *d, t_time *time_start)
+void	init_s_time(t_data *d, t_time *time)
 {
 	struct timeval	tv;
 
 	if (gettimeofday(&tv, NULL) == -1)
 		philo_exit(d, "Failed to get time.");
-	time_start->s = tv.tv_sec;
-	time_start->ms = tv.tv_usec/1000;
-	//printf("%ld%03d", d->st_time.s, d->st_time.ms);
+	time->s = tv.tv_sec;
+	time->ms = tv.tv_usec / 1000;
+}
+
+void	init_fork(t_arg *arg, t_philo *philo, int i)
+{
+	if (i % 2 == 0)
+	{
+		philo->fork_r = true;
+		philo->fork_l = true;
+	}
+	else
+	{
+		philo->fork_r = false;
+		philo->fork_l = false;
+	}
+	if (i == arg->cnt_philo - 1)
+		philo->fork_l = false;
 }
 
 void	init_s_philo(t_data *d, t_arg *arg, t_philo *philo)
@@ -65,34 +80,29 @@ void	init_s_philo(t_data *d, t_arg *arg, t_philo *philo)
 	i = -1;
 	while (++i < arg->cnt_philo)
 	{
-		if (i % 2 == 0)
-		{
-			philo[i].fork_r = true;
-			philo[i].fork_l = true;
-		}
-		else
-		{
-			philo[i].fork_r = false;
-			philo[i].fork_l = false;
-		}
-		if (i == arg->cnt_philo - 1)
-			philo[arg->cnt_philo - 1].fork_l = false;
+		philo[i].id = i;
+		init_fork(arg, &philo[i], i);
+		if (pthread_mutex_init(&philo[i].monitor_eat, NULL) == ERROR)
+			philo_exit(d, "Mutex failure.");
+		philo[i].cnt_eat = 0;
+		init_s_time(d, &philo[i].time_last_eat);
+		//printf("philo[%d] = %ld%03d\n", i, philo[i].time_last_eat.s, philo[i].time_last_eat.ms);
 	}
-
 }
 
-void	init_s_data (t_data *d)
+t_data	*init_s_data(t_data *d)
 {
 	d = (t_data *)malloc(sizeof(t_data));
 	if (!d)
 		philo_exit(d, "Malloc Failure.");
+	return (d);
 }
 
 int	main(int argc, char *argv[])
 {
 	t_data	*d;
 
-	init_s_data(d);
+	d = init_s_data(d);
 	init_s_arg(d, &d->arg, argc, argv);
 	init_s_time(d, &d->time_start);
 	init_s_philo(d, &d->arg, d->philo);
