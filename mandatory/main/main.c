@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 02:09:13 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/10 20:38:44 by hiroaki          ###   ########.fr       */
+/*   Updated: 2022/12/11 03:06:21 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,12 @@ void	philo_exit(t_data *d, char *error_msg)
 			free(d->philo);
 		free(d);
 	}
-	printf("%s\n", error_msg);
-	exit(EXIT_FAILURE);
+	if (error_msg)
+	{
+		printf("%s\n", error_msg);
+		exit(EXIT_FAILURE);
+	}
+	exit(EXIT_SUCCESS);
 }
 
 void	init_s_arg(t_data *d, t_arg *arg, int argc, char *argv[])
@@ -44,30 +48,13 @@ void	init_s_arg(t_data *d, t_arg *arg, int argc, char *argv[])
 		philo_exit(d, "Invalid argument.");
 }
 
-void	init_s_time(t_data *d, t_time *time)
+void	get_time(t_time *time)
 {
 	struct timeval	tv;
 
-	if (gettimeofday(&tv, NULL) == -1)
-		philo_exit(d, "Failed to get time.");
+	gettimeofday(&tv, NULL);
 	time->s = tv.tv_sec;
 	time->ms = tv.tv_usec / 1000;
-}
-
-void	init_fork(t_arg *arg, t_philo *philo, int i)
-{
-	if (i % 2 == 0)
-	{
-		philo->fork_r = true;
-		philo->fork_l = true;
-	}
-	else
-	{
-		philo->fork_r = false;
-		philo->fork_l = false;
-	}
-	if (i == arg->cnt_philo - 1)
-		philo->fork_l = false;
 }
 
 void	init_s_philo(t_data *d, t_arg *arg, t_philo *philo)
@@ -81,12 +68,12 @@ void	init_s_philo(t_data *d, t_arg *arg, t_philo *philo)
 	while (++i < arg->cnt_philo)
 	{
 		philo[i].id = i;
-		init_fork(arg, &philo[i], i);
-		if (pthread_mutex_init(&philo[i].monitor_eat, NULL) == ERROR)
-			philo_exit(d, "Mutex failure.");
 		philo[i].cnt_eat = 0;
-		init_s_time(d, &philo[i].time_last_eat);
-		//printf("philo[%d] = %ld%03d\n", i, philo[i].time_last_eat.s, philo[i].time_last_eat.ms);
+		philo[i].fork_l = i;
+		philo[i].fork_r = (i + 1) % arg->cnt_philo;
+		get_time(&philo[i].time_last_eat);
+		if (pthread_mutex_init(&philo[i].eater, NULL) != SUCCESS)
+			philo_exit(d, "Mutex failure.");
 	}
 }
 
@@ -94,8 +81,69 @@ t_data	*init_s_data(t_data *d)
 {
 	d = (t_data *)malloc(sizeof(t_data));
 	if (!d)
-		philo_exit(d, "Malloc Failure.");
+		philo_exit(d, "Malloc failure.");
 	return (d);
+}
+
+void	philo_dine()
+{
+
+}
+
+void	routine(void *p)
+{
+	t_philo	*philo;
+
+	philo = (t_philo *)p;
+	get_time(&philo->time_last_eat);
+	while (philo->status != FULL && philo->status != DEAD)
+	{
+		philo_dine();
+	}
+}
+
+void	confirmation_survival(void *p)
+{
+
+}
+
+void	start_dine(t_data *d, t_arg *arg, t_philo *philo)
+{
+	int			i;
+	pthread_t	tid;
+
+	get_time(&d->time_start);
+	i = -1;
+	while (++i < arg->cnt_philo)
+	{
+		if (pthread_create(&philo[i].tid, NULL, routine, &philo[i]) != SUCCESS)
+			philo_exit(d, "Failed to create pthread.");
+	}
+	if (pthread_create(&tid, NULL, confirmation_survival, philo) != SUCCESS)
+		philo_exit(d, "Failed to create pthread.");
+	if (pthread_detach(tid) != SUCCESS)
+		philo_exit(d, "Failed to detach pthread.");
+	i = -1;
+	while (++i < arg->cnt_philo)
+	{
+		if (pthread_join(&philo[i].tid, NULL) != SUCCESS)
+			philo_exit(d, "Failed to join pthread.");
+	}
+}
+
+void	init_mutex(t_data *d, t_arg *arg)
+{
+	int	i;
+
+	d->forks = malloc(sizeof(pthread_mutex_t) * arg->cnt_philo);
+	if (!d->forks)
+		philo_exit(d, "Malloc failure.");
+	i = -1;
+	while (++i < arg->cnt_philo)
+	{
+		if (pthread_mutex_init(&d->forks[i], NULL) != SUCCESS)
+			philo_exit(d, "Failed to create pthread.");
+	}
 }
 
 int	main(int argc, char *argv[])
@@ -104,6 +152,8 @@ int	main(int argc, char *argv[])
 
 	d = init_s_data(d);
 	init_s_arg(d, &d->arg, argc, argv);
-	init_s_time(d, &d->time_start);
 	init_s_philo(d, &d->arg, d->philo);
+	init_mutex(d, &d->arg);
+	start_dine(d, &d->arg, d->philo);
+	philo_exit(d, NULL);
 }
