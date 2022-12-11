@@ -1,27 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.h                                            :+:      :+:    :+:   */
+/*   ft_calloc.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/11 23:16:21 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/11 23:18:00 by hiroaki          ###   ########.fr       */
+/*   Created: 2022/02/01 23:45:05 by hiroaki           #+#    #+#             */
+/*   Updated: 2022/12/11 23:17:28 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef UTILS_H
-# define UTILS_H
+#include "../include/utils.h"
 
-# include <limits.h>
-# include <stdlib.h>
-# include <stdbool.h>
+void	*ft_calloc(size_t count, size_t size)
+{
+	size_t	alloc_size;
+	void	*ret;
 
-int		ft_atoi(const char *str, bool *ok);
-long	ft_atol(const char *str, bool *ok);
-int		ft_isdigit(int c);
-void	*ft_memset(void *b, int c, size_t len);
-void	ft_bzero(void *s, size_t n);
-void	*ft_calloc(size_t count, size_t size);
-
-#endif
+	if (size && count > SIZE_MAX / size)
+		return (NULL);
+	alloc_size = count * size;
+	if (!alloc_size)
+		alloc_size = 1;
+	ret = malloc(alloc_size);
+	if (!ret)
+		return (NULL);
+	ft_bzero(ret, alloc_size);
+	return (ret);
+}

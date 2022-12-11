@@ -6,19 +6,22 @@
 #    By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/15 03:03:24 by hiroaki           #+#    #+#              #
-#    Updated: 2022/12/10 01:42:02 by hiroaki          ###   ########.fr        #
+#    Updated: 2022/12/11 23:17:01 by hiroaki          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME			=	philo
 BONUS_NAME		=	philo_bonus
 
-FLAGS			=	-Wall -Wextra -Werror -I$(INC) -g -fsanitize=address -fsanitize=integer -fsanitize=undefined
+FLAGS			=	-Wall -Wextra -Werror -I$(INC_PATH) #-g -fsanitize=address -fsanitize=integer -fsanitize=undefined
 
 MAND			=	main.c
 BONUS			=	main.c
 UTILS			=	ft_atoi.c \
-					ft_isdigit.c
+					ft_isdigit.c \
+					ft_bzero.c \
+					ft_memset.c \
+					ft_calloc.c
 
 MAND_PATH		= 	$(addprefix mandatory/main/, $(MAND))
 MAND_OBJS_PATH	=	$(MAND_PATH:%.c=%.o)
