@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/11 22:57:49 by hiroaki          ###   ########.fr       */
+/*   Updated: 2022/12/12 22:33:10 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,9 @@
 # include "utils.h"
 
 # define SUCCESS 0
-# define DEAD 1
+# define CONTINUE 1
 # define FULL 2
+# define DEAD 3
 
 typedef struct s_data	t_data;
 
@@ -47,7 +48,6 @@ typedef struct s_philo
 {
 	int				id;
 	int				cnt_eat;
-	int				status;
 	int				fork_l;
 	int				fork_r;
 	t_time			time_last_eat;
@@ -59,6 +59,7 @@ typedef struct s_philo
 typedef struct s_data
 {
 	int				cnt_full;
+	bool			philo_status;
 	t_arg			arg;
 	t_time			time_start;
 	t_philo			*philo;

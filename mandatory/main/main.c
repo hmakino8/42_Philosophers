@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 02:09:13 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/11 23:26:55 by hiroaki          ###   ########.fr       */
+/*   Updated: 2022/12/12 23:48:14 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,12 @@ void	free_all_struct(t_data *d)
 	free(d);
 }
 
-void	destroy_mutex(t_data *d, int cnt_philo)
+void	destroy_mutex(t_data *d)
 {
 	int	i;
 
 	i = -1;
-	while (++i < cnt_philo)
+	while (++i < d->arg.cnt_philo)
 		pthread_mutex_destroy(&d->forks[i]);
 	pthread_mutex_destroy(&d->monitor_finish);
 	pthread_mutex_destroy(&d->monitor_output);
@@ -34,7 +34,7 @@ void	philo_exit(t_data *d, char *error_msg)
 {
 	if (d)
 	{
-		destroy_mutex(d, d->arg.cnt_philo);
+		destroy_mutex(d);
 		free_all_struct(d);
 	}
 	if (error_msg)
@@ -61,7 +61,11 @@ void	init_s_arg(t_data *d, t_arg *arg, int argc, char *argv[])
 		else
 			arg->cnt_must_eat = 0;
 	}
-	if (!ok)
+	if (!ok || \
+		arg->cnt_philo < 2 || \
+		arg->time_to_die < 1 || \
+		arg->time_to_eat < 1 || \
+		arg->time_to_sleep < 1)
 		philo_exit(d, "Invalid argument.");
 }
 
@@ -90,8 +94,7 @@ void	init_s_philo(t_data *d, t_arg *arg)
 		d->philo[i].fork_r = (i + 1) % arg->cnt_philo;
 		d->philo[i].d = d;
 		get_time(&d->philo[i].time_last_eat);
-		if (pthread_mutex_init(&d->philo[i].monitor_eat, NULL) != SUCCESS)
-			philo_exit(d, "Mutex failure.");
+		pthread_mutex_init(&d->philo[i].monitor_eat, NULL);
 	}
 }
 
@@ -100,54 +103,108 @@ t_data	*init_s_data(t_data *d)
 	d = (t_data *)malloc(sizeof(t_data));
 	if (!d)
 		philo_exit(d, "Malloc failure.");
+	d->cnt_full = 0;
+	d->philo_status = CONTINUE;
 	return (d);
 }
 
-void	put_status_message(t_philo *philo, char *msg)
+void	put_status_message(t_data *d, t_philo *philo, char *msg)
 {
 	int			id;
 	int			ms;
 	long int	sec;
+	t_time		now;
 
+	pthread_mutex_lock(&d->monitor_output);
 	id = philo->id + 1;
-	ms = philo->time_last_eat.ms;
-	sec = philo->time_last_eat.s;
-	printf("%ld%d %d %s\n", sec, ms, id, msg);
+	get_time(&now);
+	if (msg)
+		printf("%ld%d philo_%d %s\n", now.s, now.ms, id, msg);
+	else
+		printf("%ld%d %s\n", now.s, now.ms, "All philosophers are full");
+	pthread_mutex_unlock(&d->monitor_output);
 }
 
 void	philo_dine(t_data *d, t_philo *philo)
 {
 	pthread_mutex_lock(&d->forks[philo->fork_r]);
-	put_status_message(philo, "has taken a fork");
 	pthread_mutex_lock(&d->forks[philo->fork_l]);
-	put_status_message(philo, "has taken a fork");
+	put_status_message(d, philo, "has taken a fork");
+	put_status_message(d, philo, "has taken a fork");
 	pthread_mutex_lock(&philo->monitor_eat);
 	get_time(&philo->time_last_eat);
-	put_status_message(philo, "is eating");
+	philo->cnt_eat++;
+	put_status_message(d, philo, "is eating");
 	pthread_mutex_unlock(&philo->monitor_eat);
 	usleep(d->arg.time_to_eat);
 	pthread_mutex_unlock(&d->forks[philo->fork_r]);
 	pthread_mutex_unlock(&d->forks[philo->fork_l]);
 }
 
+void	*active_monitor_finish(t_data *d, int status)
+{
+	if (status == FULL)
+		put_status_message(d, d->philo, NULL);
+	if (status == DEAD)
+		put_status_message(d, d->philo, "is died");
+	pthread_mutex_lock(&d->monitor_finish);
+	d->philo_status = status;
+	pthread_mutex_unlock(&d->monitor_finish);
+	return (NULL);
+}
+
 void	*routine(void *p)
 {
 	t_philo	*philo;
+	t_data	*d;
+	t_arg	arg;
 
 	philo = (t_philo *)p;
+	d = philo->d;
+	arg = d->arg;
 	if (philo->id % 2)
 		usleep(200);
 	get_time(&philo->time_last_eat);
-	while (philo->status != FULL && philo->status != DEAD)
+	while (d->philo_status == CONTINUE)
 	{
 		philo_dine(philo->d, philo);
+		if (philo->cnt_eat == arg.cnt_must_eat)
+			if (++d->cnt_full == arg.cnt_philo)
+				return (active_monitor_finish(d, FULL));
+		put_status_message(d, philo, "is sleeping");
+		usleep(arg.time_to_sleep);
+		put_status_message(d, philo, "is thinking");
 	}
 	return (NULL);
 }
 
+bool	is_dead(t_data *d)
+{
+	t_arg	arg;
+	t_philo	*philo;
+	t_time	now;
+	t_time	last_eat;
+
+
+	get_time(&now);
+	arg = d->arg;
+	philo = d->philo;
+	return (now.s == philo->time_last_eat.s && \
+			now.ms - philo->time_last_eat.ms <= arg.time_to_die);
+}
+
 void	*confirmation_survival(void *p)
 {
-	return (NULL);
+	t_philo	*philo;
+	t_data	*d;
+	t_arg	arg;
+
+	philo = (t_philo *)p;
+	d = philo->d;
+	arg = d->arg;
+	while (d->philo_status == CONTINUE && !is_dead(d))
+		;
+	return (active_monitor_finish(d, DEAD));
 }
 
 void	start_dine(t_data *d, t_arg *arg, t_philo *philo)
@@ -175,25 +232,15 @@ void	start_dine(t_data *d, t_arg *arg, t_philo *philo)
 void	init_mutex(t_data *d, t_arg *arg)
 {
 	int	i;
-	pthread_mutex_t *pid;
 
-	pthread_mutex_init(pid,NULL);
-	pthread_mutex_destroy(pid);
-		//if (pthread_mutex_init(pid, NULL) != SUCCESS)
-		//	philo_exit(d, "NULLNULL.");
-	//d->forks = ft_calloc(sizeof(pthread_mutex_t), arg->cnt_philo);
-	//if (!d->forks)
-	//	philo_exit(d, "Malloc failure.");
-	//i = -1;
-	//while (++i < arg->cnt_philo)
-	//{
-	//	if (pthread_mutex_init(&d->forks[i], NULL) != SUCCESS)
-	//		philo_exit(d, "Failed to init mutex.");
-	//}
-	//if (pthread_mutex_init(&d->monitor_finish, NULL) != SUCCESS)
-	//	philo_exit(d, "Failed to init mutex.");
-	//if (pthread_mutex_init(&d->monitor_output, NULL) != SUCCESS)
-	//	philo_exit(d, "Failed to init mutex.");
+	d->forks = malloc(sizeof(pthread_mutex_t) * arg->cnt_philo);
+	if (!d->forks)
+		philo_exit(d, "Malloc failure.");
+	i = -1;
+	while (++i < arg->cnt_philo)
+		pthread_mutex_init(&d->forks[i], NULL);
+	pthread_mutex_init(&d->monitor_finish, NULL);
+	pthread_mutex_init(&d->monitor_output, NULL);
 }
 
 int	main(int argc, char *argv[])
@@ -204,8 +251,8 @@ int	main(int argc, char *argv[])
 	init_s_arg(d, &d->arg, argc, argv);
 	init_s_philo(d, &d->arg);
 	init_mutex(d, &d->arg);
-	//start_dine(d, &d->arg, d->philo);
-	//philo_exit(d, NULL);
+	start_dine(d, &d->arg, d->philo);
+	philo_exit(d, NULL);
 }
 
 __attribute__((destructor)) static void destructor()
