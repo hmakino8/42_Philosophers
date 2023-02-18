@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 02:09:13 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/19 01:54:41 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/19 02:18:46 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ static void	philo_dine(t_philo_info *info, t_philo *philo)
 	put_msg(info, philo, EAT);
 	philo->time_last_eat = get_time();
 	philo->cnt_eat++;
+	check_full(info, philo, info->arg);
 	pthread_mutex_unlock(&philo->monitor_eat);
 	ft_sleep(info->arg.time_to_eat);
 	pthread_mutex_unlock(&info->forks[philo->fork_r]);
@@ -81,18 +82,18 @@ static void	start_dine(t_philo_info *info, t_philo *philo)
 	i = 0;
 	while (i < cnt_philo)
 	{
-		if (pthread_create(&philo[i].tid, NULL, routine, &philo[i]) != 0)
+		if (pthread_create(&philo[i].tid, NULL, routine, &philo[i]))
 			philo_err_exit("Failed to create pthread.");
 		i++;
 	}
-	if (pthread_create(&tid, NULL, check_finish, info) != 0)
+	if (pthread_create(&tid, NULL, check_finish, info))
 		philo_err_exit("Failed to create pthread.");
-	if (pthread_detach(tid) != 0)
+	if (pthread_detach(tid))
 		philo_err_exit("Failed to detach pthread.");
 	i = 0;
 	while (i < cnt_philo)
 	{
-		if (pthread_join(philo[i].tid, NULL) != 0)
+		if (pthread_join(philo[i].tid, NULL))
 			philo_err_exit("Failed to join pthread.");
 		i++;
 	}
