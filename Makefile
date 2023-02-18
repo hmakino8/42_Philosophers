@@ -6,7 +6,7 @@
 #    By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/15 03:03:24 by hiroaki           #+#    #+#              #
-#    Updated: 2023/02/18 22:09:42 by hiroaki          ###   ########.fr        #
+#    Updated: 2023/02/18 23:24:35 by hiroaki          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,8 +22,8 @@ MAND	=	main.c \
 
 UTILS	=	ft_atoi.c
 
-SRCS	=	$(addprefix mandatory/, $(MAND)) \
-			$(addprefix utils/, $(UTILS))
+SRCS	=	$(addprefix src/philo/, $(MAND)) \
+			$(addprefix src/utils/, $(UTILS))
 OBJS	=	$(SRCS:%.c=%.o)
 
 $(NAME): $(OBJS)

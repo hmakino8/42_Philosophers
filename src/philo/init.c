@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/18 21:32:15 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/18 21:33:32 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/19 01:30:25 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ void	init_s_philo(t_philo_info *info)
 		info->philo[i].fork_l = i;
 		info->philo[i].fork_r = (i + 1) % cnt_philo;
 		info->philo[i].info = info;
+		info->philo[i].full = false;
 		info->philo[i].time_last_eat = get_time();
 		pthread_mutex_init(&info->philo[i].monitor_eat, NULL);
 		i++;
@@ -62,7 +63,6 @@ void	init_s_philo_info(t_philo_info **info)
 	*info = malloc(sizeof(t_philo_info));
 	if (*info == NULL)
 		philo_err_exit("Malloc failure.");
-	(*info)->cnt_full = 0;
 	(*info)->philo_status = 0;
 	(*info)->finish = false;
 }
@@ -83,8 +83,6 @@ void	init_mutex(t_philo_info *info)
 			philo_err_exit("Failed to init mutex");
 		i++;
 	}
-	if (pthread_mutex_init(&info->monitor_finish, NULL))
-		philo_err_exit("Failed to init mutex");
 	if (pthread_mutex_init(&info->monitor_output, NULL))
 		philo_err_exit("Failed to init mutex");
 }

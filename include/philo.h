@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/18 22:10:47 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/19 01:43:00 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ typedef struct s_philo
 	int				cnt_eat;
 	int				fork_l;
 	int				fork_r;
+	bool			full;
 	size_t			time_last_eat;
 	pthread_t		tid;
 	pthread_mutex_t	monitor_eat;
@@ -57,7 +58,6 @@ typedef struct s_philo
 
 typedef struct s_philo_info
 {
-	int				cnt_full;
 	int				philo_status;
 	size_t			time_start;
 	bool			finish;
@@ -80,13 +80,13 @@ void	destroy_mutex(t_philo_info *info);
 void	philo_err_exit(char *error_msg);
 
 /* put.c */
-void	put_msg(t_philo_info *info, t_philo *philo, int sig);
+void	*put_msg(t_philo_info *info, t_philo *philo, int sig);
 
 /* helper.c */
 size_t	get_time(void);
-bool	is_full(t_philo_info *info, t_philo *philo, t_arg arg);
+bool	is_full(t_philo_info *info);
+bool	check_full(t_philo_info *info, t_philo *philo, t_arg arg);
 bool	is_dead(t_philo_info *info);
 void	ft_sleep(size_t	sleep);
-void	active_monitor_finish(t_philo_info *info, int status);
 
 #endif

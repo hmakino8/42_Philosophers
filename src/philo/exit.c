@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/18 21:34:39 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/18 21:34:59 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/19 01:31:01 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ void	destroy_mutex(t_philo_info *info)
 		pthread_mutex_destroy(&info->forks[i]);
 		i++;
 	}
-	pthread_mutex_destroy(&info->monitor_finish);
 	pthread_mutex_destroy(&info->monitor_output);
 }
 

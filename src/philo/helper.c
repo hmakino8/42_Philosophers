@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/18 21:39:48 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/18 21:42:20 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/19 01:52:12 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,17 +20,30 @@ size_t	get_time(void)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-bool	is_full(t_philo_info *info, t_philo *philo, t_arg arg)
+bool	is_full(t_philo_info *info)
+{
+	int	i;
+	int	cnt_philo;
+
+	i = 0;
+	cnt_philo = info->arg.cnt_philo;
+	while (i < cnt_philo && info->philo[i].full)
+	{
+		i++;
+		if (i == cnt_philo)
+			return (true);
+	}
+	return (false);
+}
+
+bool	check_full(t_philo_info *info, t_philo *philo, t_arg arg)
 {
 	if (arg.cnt_must_eat > 0 && philo->cnt_eat >= arg.cnt_must_eat)
 	{
-		pthread_mutex_lock(&philo->monitor_eat);
-		info->cnt_full++;
-		pthread_mutex_unlock(&philo->monitor_eat);
-		if (info->cnt_full == info->arg.cnt_philo)
-			put_msg(info, info->philo, FULL);
-		if (info->cnt_full >= info->arg.cnt_philo)
+		philo->full = true;
+		if (is_full(info))
 			return (true);
+		philo->cnt_eat = 0;
 	}
 	return (false);
 }
@@ -51,13 +64,5 @@ void	ft_sleep(size_t	sleep)
 
 	start = get_time();
 	while (get_time() - start < sleep)
-		usleep(10);
-}
-
-void	active_monitor_finish(t_philo_info *info, int status)
-{
-	put_msg(info, info->philo, status);
-	pthread_mutex_lock(&info->monitor_finish);
-	info->finish = true;
-	pthread_mutex_unlock(&info->monitor_finish);
+		usleep(1);
 }

@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 02:09:13 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/18 22:10:06 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/19 01:54:41 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,15 @@ static void	*routine(void *vptr)
 	philo = (t_philo *)vptr;
 	info = philo->info;
 	arg = info->arg;
+	if (arg.cnt_philo == 1)
+		ft_sleep(arg.time_to_die + 2);
 	if (philo->id % 2)
-		ft_sleep(10);
+		ft_sleep(2);
 	philo->time_last_eat = get_time();
 	while (!info->finish)
 	{
 		philo_dine(philo->info, philo);
-		if (is_full(info, philo, arg))
+		if (check_full(info, philo, arg))
 			break ;
 		put_msg(info, philo, SLEEP);
 		ft_sleep(arg.time_to_sleep);
@@ -52,21 +54,17 @@ static void	*routine(void *vptr)
 	return (NULL);
 }
 
-static void	*confirmation_survival(void *vptr)
+static void	*check_finish(void *vptr)
 {
 	t_philo_info	*info;
 
 	info = (t_philo_info *)vptr;
 	while (!info->finish)
 	{
+		if (is_full(info))
+			return (put_msg(info, info->philo, FULL));
 		if (is_dead(info))
-		{
-			pthread_mutex_lock(&info->monitor_finish);
-			info->finish = true;
-			pthread_mutex_unlock(&info->monitor_finish);
-			put_msg(info, info->philo, DEAD);
-			break ;
-		}
+			return (put_msg(info, info->philo, DEAD));
 		ft_sleep(1);
 	}
 	return (NULL);
@@ -87,7 +85,7 @@ static void	start_dine(t_philo_info *info, t_philo *philo)
 			philo_err_exit("Failed to create pthread.");
 		i++;
 	}
-	if (pthread_create(&tid, NULL, confirmation_survival, info) != 0)
+	if (pthread_create(&tid, NULL, check_finish, info) != 0)
 		philo_err_exit("Failed to create pthread.");
 	if (pthread_detach(tid) != 0)
 		philo_err_exit("Failed to detach pthread.");
@@ -114,7 +112,7 @@ int	main(int argc, char *argv[])
 	return (0);
 }
 
-__attribute__((destructor)) static void destructor()
-{
-	system("leaks -q philo");
-}
+//__attribute__((destructor)) static void destructor()
+//{
+//	system("leaks -q philo");
+//}
