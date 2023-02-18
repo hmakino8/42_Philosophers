@@ -6,11 +6,11 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/01 23:44:45 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/12 21:05:19 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/18 22:01:33 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/utils.h"
+#include "utils.h"
 
 static int	set_errno(int e)
 {
@@ -18,9 +18,14 @@ static int	set_errno(int e)
 	return (-1);
 }
 
-static int	ft_isspace(int c)
+static int	ft_isspace(int ch)
 {
-	return (c == ' ' || ('\t' <= c && c <= '\r'));
+	return (ch == ' ' || ('\t' <= ch && ch <= '\r'));
+}
+
+static int	ft_isdigit(int ch)
+{
+	return ('0' <= ch && ch <= '9');
 }
 
 static bool	check_overflow(unsigned long num, int sign)
@@ -51,10 +56,7 @@ int	ft_atoi(const char *str)
 	{
 		num = num * 10 + (*str++ - '0');
 		if (check_overflow(num, sign))
-		{
-			errno = ERANGE;
 			return (set_errno(ERANGE));
-		}
 	}
 	if (*str != '\0')
 		return (set_errno(EINVAL));

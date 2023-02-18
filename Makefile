@@ -6,53 +6,37 @@
 #    By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/15 03:03:24 by hiroaki           #+#    #+#              #
-#    Updated: 2022/12/11 23:17:01 by hiroaki          ###   ########.fr        #
+#    Updated: 2023/02/18 22:09:42 by hiroaki          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME			=	philo
-BONUS_NAME		=	philo_bonus
+NAME	=	philo
+INCLUDE =	./include
+CFLAGS	=	-Wall -Wextra -Werror -I$(INCLUDE)
 
-FLAGS			=	-Wall -Wextra -Werror -I$(INC_PATH) #-g -fsanitize=address -fsanitize=integer -fsanitize=undefined
+MAND	=	main.c \
+			init.c \
+			put.c \
+			helper.c \
+			exit.c
 
-MAND			=	main.c
-BONUS			=	main.c
-UTILS			=	ft_atoi.c \
-					ft_isdigit.c \
-					ft_bzero.c \
-					ft_memset.c \
-					ft_calloc.c
+UTILS	=	ft_atoi.c
 
-MAND_PATH		= 	$(addprefix mandatory/main/, $(MAND))
-MAND_OBJS_PATH	=	$(MAND_PATH:%.c=%.o)
+SRCS	=	$(addprefix mandatory/, $(MAND)) \
+			$(addprefix utils/, $(UTILS))
+OBJS	=	$(SRCS:%.c=%.o)
 
-BONUS_PATH		= 	$(addprefix bonus/main/, $(BONUS))
-BONUS_OBJS_PATH	=	$(BONUS_PATH:%.c=%.o)
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
 
-UTILS_PATH		= 	$(addprefix utils/, $(UTILS))
-UTILS_OBJS_PATH	=	$(UTILS_PATH:%.c=%.o)
-
-INC_PATH		=	./include
-
-all: 			$(NAME)
-
-$(NAME):		$(MAND_OBJS_PATH) $(UTILS_OBJS_PATH)
-				$(CC) $(FLAGS) $(MAND_OBJS_PATH) $(UTILS_OBJS_PATH) -o $(NAME)
-
-$(BONUS_NAME):	$(BONUS_OBJS_PATH)
-				$(CC) $(FLAGS) $(BONUS_OBJS_PATH) $(UTILS_OBJS_PATH) -o $(BONUS_NAME)
+all:	$(NAME)
 
 clean:
-				$(RM) $(MAND_OBJS_PATH)
-				$(RM) $(BONUS_OBJS_PATH)
-				$(RM) $(UTILS_OBJS_PATH)
+	$(RM) $(OBJS)
 
-fclean:			clean
-				$(RM) $(NAME)
-				$(RM) $(BONUS_NAME)
+fclean:	clean
+	$(RM) $(NAME)
 
-re:				fclean all
+re:	fclean all
 
-bonus:			$(BONUS_NAME)
-
-.PHONY:			all clean fclean re bonus
+.PHONY:	all clean fclean re

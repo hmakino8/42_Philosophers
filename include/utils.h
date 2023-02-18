@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/11 23:16:21 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/12 16:45:52 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/18 21:50:30 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,7 @@
 # include <stdbool.h>
 # include <errno.h>
 
+/* ft_atoi.c */
 int		ft_atoi(const char *str);
-long	ft_atol(const char *str, bool *ok);
-int		ft_isdigit(int c);
-void	*ft_memset(void *b, int c, size_t len);
-void	ft_bzero(void *s, size_t n);
-void	*ft_calloc(size_t count, size_t size);
 
 #endif

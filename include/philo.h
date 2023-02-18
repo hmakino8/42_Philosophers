@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/18 14:21:53 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/18 22:10:47 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 typedef enum e_sig
 {
-	FORK,
+	FORK = 1,
 	EAT,
 	SLEEP,
 	THINK,
@@ -36,18 +36,12 @@ typedef struct s_philo_info	t_philo_info;
 
 typedef struct s_arg
 {
-	int		cnt_philo;
-	int		cnt_must_eat;
-	int		time_to_die;
-	int		time_to_eat;
-	int		time_to_sleep;
+	int	cnt_philo;
+	int	cnt_must_eat;
+	int	time_to_die;
+	int	time_to_eat;
+	int	time_to_sleep;
 }	t_arg;
-
-//typedef struct s_time
-//{
-//	int			ms;
-//	long int	s;
-//}	t_time;
 
 typedef struct s_philo
 {
@@ -74,6 +68,25 @@ typedef struct s_philo_info
 	pthread_mutex_t	*forks;
 }	t_philo_info;
 
+/* init.c */
+void	init_s_arg(t_arg *arg, int argc, char *argv[]);
+void	init_s_philo(t_philo_info *info);
+void	init_s_philo_info(t_philo_info **info);
+void	init_mutex(t_philo_info *info);
+
+/* exit.c */
+void	free_all_struct(t_philo_info *info);
+void	destroy_mutex(t_philo_info *info);
+void	philo_err_exit(char *error_msg);
+
+/* put.c */
+void	put_msg(t_philo_info *info, t_philo *philo, int sig);
+
+/* helper.c */
 size_t	get_time(void);
+bool	is_full(t_philo_info *info, t_philo *philo, t_arg arg);
+bool	is_dead(t_philo_info *info);
+void	ft_sleep(size_t	sleep);
+void	active_monitor_finish(t_philo_info *info, int status);
 
 #endif
