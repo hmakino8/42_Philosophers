@@ -6,18 +6,24 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/01 23:44:45 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/13 00:00:25 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/12 21:05:19 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/utils.h"
+
+static int	set_errno(int e)
+{
+	errno = e;
+	return (-1);
+}
 
 static int	ft_isspace(int c)
 {
 	return (c == ' ' || ('\t' <= c && c <= '\r'));
 }
 
-static bool	is_overflow(unsigned long num, int sign)
+static bool	check_overflow(unsigned long num, int sign)
 {
 	if ((sign > 0 && num > INT_MAX) || \
 		(sign < 0 && num > (INT_MAX + 1UL)))
@@ -25,14 +31,13 @@ static bool	is_overflow(unsigned long num, int sign)
 	return (false);
 }
 
-int	ft_atoi(const char *str, bool *ok)
+int	ft_atoi(const char *str)
 {
 	int				sign;
 	unsigned long	num;
 
-	*ok = false;
-	if (!str)
-		return (-1);
+	if (str == NULL)
+		return (set_errno(EINVAL));
 	sign = 1;
 	num = 0;
 	while (ft_isspace(*str))
@@ -44,12 +49,14 @@ int	ft_atoi(const char *str, bool *ok)
 	}
 	while (ft_isdigit(*str))
 	{
-		num = (num * 10) + (*str++ - '0');
-		if (is_overflow(num, sign))
-			return (-1);
+		num = num * 10 + (*str++ - '0');
+		if (check_overflow(num, sign))
+		{
+			errno = ERANGE;
+			return (set_errno(ERANGE));
+		}
 	}
 	if (*str != '\0')
-		return (-1);
-	*ok = true;
+		return (set_errno(EINVAL));
 	return ((int)num * sign);
 }

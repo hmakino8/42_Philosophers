@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
-/*   Updated: 2022/12/12 22:33:10 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/18 14:21:53 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,17 @@
 # include <sys/time.h>
 # include "utils.h"
 
-# define SUCCESS 0
-# define CONTINUE 1
-# define FULL 2
-# define DEAD 3
+typedef enum e_sig
+{
+	FORK,
+	EAT,
+	SLEEP,
+	THINK,
+	FULL,
+	DEAD,
+}	t_sig;
 
-typedef struct s_data	t_data;
+typedef struct s_philo_info	t_philo_info;
 
 typedef struct s_arg
 {
@@ -38,11 +43,11 @@ typedef struct s_arg
 	int		time_to_sleep;
 }	t_arg;
 
-typedef struct s_time
-{
-	int			ms;
-	long int	s;
-}	t_time;
+//typedef struct s_time
+//{
+//	int			ms;
+//	long int	s;
+//}	t_time;
 
 typedef struct s_philo
 {
@@ -50,22 +55,25 @@ typedef struct s_philo
 	int				cnt_eat;
 	int				fork_l;
 	int				fork_r;
-	t_time			time_last_eat;
+	size_t			time_last_eat;
 	pthread_t		tid;
 	pthread_mutex_t	monitor_eat;
-	t_data			*d;
+	t_philo_info	*info;
 }	t_philo;
 
-typedef struct s_data
+typedef struct s_philo_info
 {
 	int				cnt_full;
-	bool			philo_status;
+	int				philo_status;
+	size_t			time_start;
+	bool			finish;
 	t_arg			arg;
-	t_time			time_start;
 	t_philo			*philo;
 	pthread_mutex_t	monitor_output;
 	pthread_mutex_t	monitor_finish;
 	pthread_mutex_t	*forks;
-}	t_data;
+}	t_philo_info;
+
+size_t	get_time(void);
 
 #endif
