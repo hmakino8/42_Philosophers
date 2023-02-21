@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/18 21:39:48 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/19 02:16:18 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/22 01:42:06 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,42 +20,34 @@ size_t	get_time(void)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-bool	is_full(t_philo_info *info)
+void	check_status(t_philo_info *info, t_philo *philos, t_stat *stat)
 {
-	int	i;
-	int	cnt_philo;
+	int		i;
+	int		full_cnt;
+	int		cnt_philo;
+	size_t	time_to_die;
 
-	i = 0;
 	cnt_philo = info->arg.cnt_philo;
-	while (i < cnt_philo && info->philo[i].full)
+	time_to_die = info->arg.time_to_die;
+	i = 0;
+	full_cnt = 0;
+	while (i < cnt_philo)
 	{
+		if (get_time() - philos[i].time_last_eat > time_to_die)
+		{
+			*stat = DEAD;
+			printf("%ld\n", get_time() - philos[i].time_last_eat);
+			return (put_msg(info, &info->philos[i], *stat));
+		}
+		if (philos[i].full)
+			full_cnt++;
 		i++;
-		if (i == cnt_philo)
-			return (true);
 	}
-	return (false);
-}
-
-bool	check_full(t_philo_info *info, t_philo *philo, t_arg arg)
-{
-	if (arg.cnt_must_eat > 0 && philo->cnt_eat >= arg.cnt_must_eat)
+	if (full_cnt == cnt_philo)
 	{
-		philo->full = true;
-		if (is_full(info))
-			return (true);
-		philo->cnt_eat = 0;
+		*stat = FULL;
+		return (put_msg(info, &info->philos[i], *stat));
 	}
-	return (false);
-}
-
-bool	is_dead(t_philo_info *info)
-{
-	t_arg	arg;
-	t_philo	*philo;
-
-	arg = info->arg;
-	philo = info->philo;
-	return ((get_time() - philo->time_last_eat) > (size_t)arg.time_to_die);
 }
 
 void	ft_sleep(size_t	sleep)
@@ -64,5 +56,5 @@ void	ft_sleep(size_t	sleep)
 
 	start = get_time();
 	while (get_time() - start < sleep)
-		usleep(1);
+		usleep(500);
 }

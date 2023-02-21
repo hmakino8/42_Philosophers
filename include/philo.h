@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/19 01:43:00 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/22 01:39:00 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,75 +18,83 @@
 # include <stdlib.h>
 # include <stdbool.h>
 # include <pthread.h>
+# include <string.h>
 # include <time.h>
 # include <sys/time.h>
 # include "utils.h"
 
-typedef enum e_sig
+# ifndef PHILO_MAX
+ # define PHILO_MAX 200
+# endif
+
+typedef enum e_stat
 {
-	FORK = 1,
+	ERR = -1,
+	DEF,
+	FORK,
 	EAT,
 	SLEEP,
 	THINK,
 	FULL,
 	DEAD,
-}	t_sig;
+}	t_stat;
 
-typedef struct s_philo_info	t_philo_info;
+typedef struct s_arg t_arg;
+typedef struct s_philo t_philo;
+typedef struct s_philo_info t_philo_info;
 
-typedef struct s_arg
+struct s_arg
 {
 	int	cnt_philo;
 	int	cnt_must_eat;
 	int	time_to_die;
 	int	time_to_eat;
 	int	time_to_sleep;
-}	t_arg;
+};
 
-typedef struct s_philo
+struct s_philo
 {
 	int				id;
 	int				cnt_eat;
 	int				fork_l;
 	int				fork_r;
 	bool			full;
+	t_stat			stat;
 	size_t			time_last_eat;
 	pthread_t		tid;
-	pthread_mutex_t	monitor_eat;
+	pthread_mutex_t	mtx_eat;
 	t_philo_info	*info;
-}	t_philo;
+};
 
-typedef struct s_philo_info
+struct s_philo_info
 {
-	int				philo_status;
-	size_t			time_start;
 	bool			finish;
+	size_t			time_start;
 	t_arg			arg;
-	t_philo			*philo;
-	pthread_mutex_t	monitor_output;
-	pthread_mutex_t	monitor_finish;
-	pthread_mutex_t	*forks;
-}	t_philo_info;
+	pthread_mutex_t	mtx_put;
+	pthread_mutex_t	mtx_fin;
+	pthread_mutex_t	forks[PHILO_MAX];
+	t_philo			philos[PHILO_MAX];
+};
+
 
 /* init.c */
-void	init_s_arg(t_arg *arg, int argc, char *argv[]);
-void	init_s_philo(t_philo_info *info);
-void	init_s_philo_info(t_philo_info **info);
-void	init_mutex(t_philo_info *info);
+int		init_s_philo_info(t_philo_info *info, int argc, char *argv[]);
 
 /* exit.c */
-void	free_all_struct(t_philo_info *info);
+int		philo_err_exit(char *error_msg);
 void	destroy_mutex(t_philo_info *info);
-void	philo_err_exit(char *error_msg);
 
 /* put.c */
-void	*put_msg(t_philo_info *info, t_philo *philo, int sig);
+void	put_msg(t_philo_info *info, t_philo *philo, t_stat stat);
 
 /* helper.c */
 size_t	get_time(void);
-bool	is_full(t_philo_info *info);
-bool	check_full(t_philo_info *info, t_philo *philo, t_arg arg);
-bool	is_dead(t_philo_info *info);
+void	check_status(t_philo_info *info, t_philo *philo, t_stat *stat);
 void	ft_sleep(size_t	sleep);
+//bool	is_finish(t_philo_info *info);
+//bool	is_full(t_philo_info *info);
+//bool	check_full(t_philo_info *info, t_philo *philo, t_arg arg);
+//bool	is_dead(t_philo_info *info);
 
 #endif

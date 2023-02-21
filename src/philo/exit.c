@@ -6,18 +6,11 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/18 21:34:39 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/19 01:31:01 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/21 14:04:57 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-void	free_all_struct(t_philo_info *info)
-{
-	free(info->philo);
-	free(info->forks);
-	free(info);
-}
 
 void	destroy_mutex(t_philo_info *info)
 {
@@ -27,17 +20,15 @@ void	destroy_mutex(t_philo_info *info)
 	while (i < info->arg.cnt_philo)
 	{
 		pthread_mutex_destroy(&info->forks[i]);
+		pthread_mutex_destroy(&info->philos[i].mtx_eat);
 		i++;
 	}
-	pthread_mutex_destroy(&info->monitor_output);
+	pthread_mutex_destroy(&info->mtx_put);
+	pthread_mutex_destroy(&info->mtx_fin);
 }
 
-void	philo_err_exit(char *error_msg)
+int	philo_err_exit(char *error_msg)
 {
-	if (error_msg)
-	{
-		printf("%s\n", error_msg);
-		exit(EXIT_FAILURE);
-	}
-	exit(EXIT_SUCCESS);
+	write(STDERR_FILENO, error_msg, ft_strlen(error_msg));
+	exit(EXIT_FAILURE);
 }

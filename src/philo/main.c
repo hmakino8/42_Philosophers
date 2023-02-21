@@ -6,72 +6,108 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 02:09:13 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/19 02:18:46 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/20 17:09:30hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static void	philo_dine(t_philo_info *info, t_philo *philo)
+void	act_eat(t_philo *philo, t_stat *stat)
 {
+	int				must_eat;
+	t_philo_info	*info;
+
+	*stat = SLEEP;
+	info = philo->info;
+	if (philo->id % 2)
+		usleep(100);
 	pthread_mutex_lock(&info->forks[philo->fork_r]);
+	put_msg(info, philo, FORK);
+	if (philo->fork_r == philo->fork_l)
+	{
+		*stat = DEAD;
+		return ;
+	}
 	pthread_mutex_lock(&info->forks[philo->fork_l]);
 	put_msg(info, philo, FORK);
-	put_msg(info, philo, FORK);
-	pthread_mutex_lock(&philo->monitor_eat);
+	pthread_mutex_lock(&philo->mtx_eat);
 	put_msg(info, philo, EAT);
 	philo->time_last_eat = get_time();
 	philo->cnt_eat++;
-	check_full(info, philo, info->arg);
-	pthread_mutex_unlock(&philo->monitor_eat);
+	must_eat = info->arg.cnt_must_eat;
+	if (must_eat > 0 && philo->cnt_eat >= must_eat)
+		philo->full = true;
+	pthread_mutex_unlock(&philo->mtx_eat);
 	ft_sleep(info->arg.time_to_eat);
 	pthread_mutex_unlock(&info->forks[philo->fork_r]);
 	pthread_mutex_unlock(&info->forks[philo->fork_l]);
 }
 
+void	act_sleep(t_philo *philo, t_stat *stat)
+{
+	t_philo_info	*info;
+
+	*stat = THINK;
+	info = philo->info;
+	put_msg(info, philo, SLEEP);
+	ft_sleep(info->arg.time_to_sleep);
+}
+
+void	act_think(t_philo *philo, t_stat *stat)
+{
+	t_philo_info	*info;
+
+	info = philo->info;
+	put_msg(info, philo, THINK);
+	*stat = DEF;
+}
+
 static void	*routine(void *vptr)
 {
-	t_philo			*philo;
+	t_stat			stat;
 	t_philo_info	*info;
-	t_arg			arg;
+	t_philo			*philo;
 
 	philo = (t_philo *)vptr;
 	info = philo->info;
-	arg = info->arg;
-	if (arg.cnt_philo == 1)
-		ft_sleep(arg.time_to_die + 2);
+	stat = DEF;
 	if (philo->id % 2)
-		ft_sleep(2);
-	philo->time_last_eat = get_time();
+		usleep(500);
 	while (!info->finish)
 	{
-		philo_dine(philo->info, philo);
-		if (check_full(info, philo, arg))
-			break ;
-		put_msg(info, philo, SLEEP);
-		ft_sleep(arg.time_to_sleep);
-		put_msg(info, philo, THINK);
+		if (stat == DEF)
+			act_eat(philo, &stat);
+		else if (stat == SLEEP)
+			act_sleep(philo, &stat);
+		else if (stat == THINK)
+			act_think(philo, &stat);
 	}
 	return (NULL);
 }
 
 static void	*check_finish(void *vptr)
 {
+	t_stat			stat;
 	t_philo_info	*info;
 
 	info = (t_philo_info *)vptr;
-	while (!info->finish)
+	stat = DEF;
+	while (1)
 	{
-		if (is_full(info))
-			return (put_msg(info, info->philo, FULL));
-		if (is_dead(info))
-			return (put_msg(info, info->philo, DEAD));
-		ft_sleep(1);
+		check_status(info, info->philos, &stat);
+		if (stat != DEF)
+		{
+			pthread_mutex_lock(&info->mtx_fin);
+			info->finish = true;
+			pthread_mutex_unlock(&info->mtx_fin);
+			break ;
+		}
+		ft_sleep(5);
 	}
 	return (NULL);
 }
 
-static void	start_dine(t_philo_info *info, t_philo *philo)
+static int	start_dine(t_philo_info *info, t_philo *philos)
 {
 	int			i;
 	int			cnt_philo;
@@ -82,35 +118,36 @@ static void	start_dine(t_philo_info *info, t_philo *philo)
 	i = 0;
 	while (i < cnt_philo)
 	{
-		if (pthread_create(&philo[i].tid, NULL, routine, &philo[i]))
-			philo_err_exit("Failed to create pthread.");
+		philos[i].time_last_eat = info->time_start;
+		if (pthread_create(&philos[i].tid, NULL, routine, &philos[i]))
+			return (philo_err_exit("Failed to create pthread."));
 		i++;
 	}
 	if (pthread_create(&tid, NULL, check_finish, info))
-		philo_err_exit("Failed to create pthread.");
+		return (philo_err_exit("Failed to create pthread."));
 	if (pthread_detach(tid))
-		philo_err_exit("Failed to detach pthread.");
+		return (philo_err_exit("Failed to detach pthread."));
 	i = 0;
 	while (i < cnt_philo)
 	{
-		if (pthread_join(philo[i].tid, NULL))
-			philo_err_exit("Failed to join pthread.");
+		//if (pthread_detach(philos[i].tid))
+		//	return (philo_err_exit("Failed to detach pthread."));
+		if (pthread_join(philos[i].tid, NULL))
+			return (philo_err_exit("Failed to join pthread."));
 		i++;
 	}
+	return (0);
 }
 
 int	main(int argc, char *argv[])
 {
-	t_philo_info	*info;
+	t_philo_info	info;
 
-	init_s_philo_info(&info);
-	init_s_arg(&info->arg, argc, argv);
-	init_s_philo(info);
-	init_mutex(info);
-	start_dine(info, info->philo);
-	destroy_mutex(info);
-	free_all_struct(info);
-	return (0);
+	if (init_s_philo_info(&info, argc, argv) || \
+		start_dine(&info, info.philos))
+		return (EXIT_FAILURE);
+	destroy_mutex(&info);
+	return (EXIT_SUCCESS);
 }
 
 //__attribute__((destructor)) static void destructor()

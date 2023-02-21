@@ -1,27 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.h                                            :+:      :+:    :+:   */
+/*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/11 23:16:21 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/21 14:06:30 by hiroaki          ###   ########.fr       */
+/*   Created: 2023/02/21 14:05:39 by hiroaki           #+#    #+#             */
+/*   Updated: 2023/02/21 14:06:47 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef UTILS_H
-# define UTILS_H
+#include "utils.h"
 
-# include <limits.h>
-# include <stdlib.h>
-# include <stdbool.h>
-# include <errno.h>
+size_t	ft_strlen(char *str)
+{
+	char	*tmp;
 
-/* ft_atoi.c */
-int		ft_atoi(const char *str);
-
-/* ft_strlen.c */
-size_t	ft_strlen(char *str);
-
-#endif
+	tmp = str;
+	while (*str)
+		str++;
+	return (str - tmp);
+}
