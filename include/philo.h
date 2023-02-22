@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/10 20:11:17 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/22 01:39:00 by hiroaki          ###   ########.fr       */
+/*   Created: 2023/02/22 16:59:46 by hiroaki           #+#    #+#             */
+/*   Updated: 2023/02/22 16:59:47 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 # include "utils.h"
 
 # ifndef PHILO_MAX
- # define PHILO_MAX 200
+#  define PHILO_MAX 200
 # endif
 
 typedef enum e_stat
@@ -39,9 +39,9 @@ typedef enum e_stat
 	DEAD,
 }	t_stat;
 
-typedef struct s_arg t_arg;
-typedef struct s_philo t_philo;
-typedef struct s_philo_info t_philo_info;
+typedef struct s_arg		t_arg;
+typedef struct s_philo		t_philo;
+typedef struct s_philo_info	t_philo_info;
 
 struct s_arg
 {
@@ -77,24 +77,29 @@ struct s_philo_info
 	t_philo			philos[PHILO_MAX];
 };
 
-
 /* init.c */
 int		init_s_philo_info(t_philo_info *info, int argc, char *argv[]);
 
-/* exit.c */
+/* routine.c */
+int		start_dine(t_philo_info *info, t_philo *philos);
+
+/* action.c */
+t_stat	act_eat(t_philo *philo, t_philo_info *info);
+t_stat	act_sleep(t_philo *philo, t_philo_info *info);
+t_stat	act_think(t_philo *philo, t_philo_info *info);
+
+/* put.c */
+t_stat	put_msg(t_philo_info *info, t_philo *philo, t_stat stat);
+
+/* teminate.c */
 int		philo_err_exit(char *error_msg);
 void	destroy_mutex(t_philo_info *info);
 
-/* put.c */
-void	put_msg(t_philo_info *info, t_philo *philo, t_stat stat);
-
 /* helper.c */
 size_t	get_time(void);
-void	check_status(t_philo_info *info, t_philo *philo, t_stat *stat);
 void	ft_sleep(size_t	sleep);
-//bool	is_finish(t_philo_info *info);
-//bool	is_full(t_philo_info *info);
-//bool	check_full(t_philo_info *info, t_philo *philo, t_arg arg);
-//bool	is_dead(t_philo_info *info);
+bool	is_full(t_philo_info *info, int full_cnt);
+bool	is_dead(t_philo_info *info, t_philo *philo);
+bool	is_finish(t_philo_info *info);
 
 #endif

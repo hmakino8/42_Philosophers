@@ -6,20 +6,23 @@
 #    By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/15 03:03:24 by hiroaki           #+#    #+#              #
-#    Updated: 2023/02/22 02:06:07 by hiroaki          ###   ########.fr        #
+#    Updated: 2023/02/22 17:04:25 by hiroaki          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	philo
+
 INCLUDE =	./include
-CFLAGS	=	-I$(INCLUDE) #-Wall -Wextra -Werror
+CFLAGS	=	-I$(INCLUDE) -Wall -Wextra -Werror $(DEBUG)
 DEBUG	=	#-g -fsanitize=thread
 
 MAND	=	main.c \
 			init.c \
-			helper.c \
-			exit.c \
+			routine.c \
+			action.c \
 			put.c \
+			terminate.c \
+			helper.c
 
 UTILS	=	ft_atoi.c \
 			ft_strlen.c
@@ -29,7 +32,7 @@ SRCS	=	$(addprefix src/philo/, $(MAND)) \
 OBJS	=	$(SRCS:%.c=%.o)
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(DEBUG) -o $(NAME) $(OBJS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
 
 all:	$(NAME)
 
