@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/22 15:16:16 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/22 15:16:34 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/22 18:09:07 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,11 @@ t_stat	act_eat(t_philo *philo, t_philo_info *info)
 		usleep(500);
 	pthread_mutex_lock(&info->forks[philo->fork_r]);
 	put_msg(info, philo, FORK);
-	if (philo->fork_r == philo->fork_l)
+	if (info->arg.cnt_philo == 1)
+	{
+		pthread_mutex_unlock(&philo->mtx_eat);
 		return (DEAD);
+	}
 	pthread_mutex_lock(&info->forks[philo->fork_l]);
 	put_msg(info, philo, FORK);
 	pthread_mutex_lock(&philo->mtx_eat);

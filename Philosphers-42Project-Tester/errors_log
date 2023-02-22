@@ -6,3 +6,4 @@
 [philo-Test #2]: Given 4 410 200 200 arguments to philo, no philosopher should die !
 [philo-Test #3]: Given 4 800 200 200 arguments to philo, no philosopher should die !
 [philo-Test #4]: Given 4 410 200 200 7 arguments to philo, philo should only be stopped if each philosopher ate at least 7 times !
+[philo-Test #5]: Given 2 60 60 60 arguments to philo, the time difference of each death shouldn't be bigger than 10ms !

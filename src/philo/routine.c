@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/22 16:51:20 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/22 16:53:18 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/22 18:07:43 by hiroaki          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,8 @@ static void	*routine(void *vptr)
 	stat = DEF;
 	pthread_mutex_lock(&philo->mtx_eat);
 	philo->time_last_eat = info->time_start;
-	pthread_mutex_unlock(&philo->mtx_eat);
+	if (info->arg.cnt_philo != 1)
+		pthread_mutex_unlock(&philo->mtx_eat);
 	while (!is_finish(info))
 	{
 		if (stat == DEF)
@@ -90,6 +91,7 @@ static void	*check_finish(void *vptr)
 	philos = info->philos;
 	while (1)
 	{
+		ft_sleep(5);
 		i = 0;
 		cnt_full = 0;
 		while (i < info->arg.cnt_philo)
@@ -103,7 +105,6 @@ static void	*check_finish(void *vptr)
 			pthread_mutex_unlock(&philos[i].mtx_eat);
 			i++;
 		}
-		ft_sleep(5);
 	}
 	return (NULL);
 }
