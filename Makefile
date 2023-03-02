@@ -6,15 +6,14 @@
 #    By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/15 03:03:24 by hiroaki           #+#    #+#              #
-#    Updated: 2023/02/22 17:04:25 by hiroaki          ###   ########.fr        #
+#    Updated: 2023/02/22 18:28:40 by hmakino          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	philo
 
 INCLUDE =	./include
-CFLAGS	=	-I$(INCLUDE) -Wall -Wextra -Werror $(DEBUG)
-DEBUG	=	#-g -fsanitize=thread
+CFLAGS	=	-I$(INCLUDE) -Wall -Wextra -Werror
 
 MAND	=	main.c \
 			init.c \

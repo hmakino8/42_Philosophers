@@ -6,7 +6,7 @@
 /*   By: hiroaki <hiroaki@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/22 17:01:00 by hiroaki           #+#    #+#             */
-/*   Updated: 2023/02/22 17:06:23 by hiroaki          ###   ########.fr       */
+/*   Updated: 2023/02/22 18:23:47 by hmakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,3 @@ int	main(int argc, char *argv[])
 	destroy_mutex(&info);
 	return (EXIT_SUCCESS);
 }
-
-//__attribute__((destructor)) static void destructor()
-//{
-//	system("leaks -q philo");
-//}
